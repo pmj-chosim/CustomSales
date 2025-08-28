@@ -57,6 +57,9 @@ public class ProductService {
     public List<ProductSimpleResponseDto> findProductsByUserId(Integer userId) {
         List<Product> products = pR.findByUserId(userId);
 
+        User user= uR.findById(userId).orElseThrow(()->new RuntimeException(""));
+        //여기에 ExceptionHandler에서 위에 있는 runtimeexcetpion 받아서 처리 402
+
         return products.stream()
                 .map(product -> {
                     // 모든 이미지의 리뷰 히스토리들을 취합
@@ -106,7 +109,7 @@ public class ProductService {
                 })
                 .collect(Collectors.toList());
 
-        // cascadeALL 이므로 ProductImage 저장 시 History도 함께 저장됩니다.
+        // cascadeALL 이므로 ProductImage 저장 시 History도 함께 저장됨
         piR.saveAll(productImages);
 
         return ProductDetailResponseDto.from(savedProduct, user, baseProduct, productImages);

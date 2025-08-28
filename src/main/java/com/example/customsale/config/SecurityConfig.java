@@ -2,13 +2,15 @@ package com.example.customsale.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -17,14 +19,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .httpBasic(withDefaults()) // ① Basic 인증 활성화
-                .csrf(csrf -> csrf.disable()) // ② CSRF 비활성화
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ③ 세션 사용 안함
+                .httpBasic(Customizer.withDefaults()) // HTTP Basic 인증 활성화
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .anyRequest().authenticated() // ⑤ 나머지 모든 요청은 인증 필요
+                        .requestMatchers(HttpMethod.POST, "/api/products").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/products/my").authenticated()
+                        .requestMatchers("/api/users", "/api/users/**").permitAll() // 회원가입, 유저 관련 API는 모두 허용
+                        .anyRequest().permitAll()
                 );
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html");
     }
 
     @Bean

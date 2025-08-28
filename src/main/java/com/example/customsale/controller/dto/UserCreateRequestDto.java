@@ -18,7 +18,7 @@ public class UserCreateRequestDto {
     @Size(min = 8, message = "비밀번호는 최소 8자 이상이어야 합니다.")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z]).*$",
             message = "비밀번호는 대문자와 소문자를 각각 1개 이상 포함해야 합니다.")
-    private String pwd_hash;
+    private String pwd;
     private String email;
     private String phoneNumber;
 }
