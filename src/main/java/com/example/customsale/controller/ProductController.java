@@ -5,6 +5,9 @@ import com.example.customsale.controller.dto.*;
 import com.example.customsale.service.ProductService;
 import com.example.customsale.repository.entity.User;
 import com.example.customsale.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,6 +21,7 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name="Product API", description = "상품 관련 API")
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
@@ -26,12 +30,14 @@ public class ProductController {
     private final ProductService productService;
     private final UserService userService;
 
+    @Operation(summary = "단일 상품 조회", description = "id가 {id}인 단일 상품 조회 API")
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDetailResponseDto> findProductById(@PathVariable Integer id) {
+    public ResponseEntity<ProductDetailResponseDto> findProductById(@NotNull @PathVariable Integer id) {
         ProductDetailResponseDto product = productService.findProductDetailById(id);
         return ResponseEntity.ok(product);
     }
 
+    @Operation(summary = "상품 전체 조회", description = "상품 판매가 성공적으로 승인된 모든 상품 조회 API, 페이지기반 조회(page,size)")
     // 5. 성공적으로 승인받은 모든 상품 조회 API (페이지네이션)
     @GetMapping("")
     public ResponseEntity<Page<ProductSimpleResponseDto>> findAllApproved(
@@ -45,6 +51,7 @@ public class ProductController {
     //SecurityContextHolder
     //principal 구현에 따라 내가 가져올 게 다름..
 
+    @Operation(summary = "유저 자신의 상품 조회", description = "유저 자신의 상품을 조회하는 API, 로그인된 정보를 기반으로 유저가 이전에 등록한 상품 정보 반환")
     // 4. 로그인된 유저가 등록한 상품 조회 API
     @GetMapping("/my")
     public ResponseEntity<List<ProductSimpleResponseDto>> getMyProducts(Principal principal) {
@@ -62,10 +69,11 @@ public class ProductController {
 
 
     // 3. 상품 생성 API - Principal 객체를 사용하여 userId를 안전하게 가져옵니다.
+    @Operation(summary = "상품 생성", description = "상품을 등록할 수 있게 하는 API")
     @PostMapping
     public ResponseEntity<ProductDetailResponseDto> createProduct(
             Principal principal, // 현재 인증된 사용자의 정보를 담고 있습니다.
-            @RequestBody ProductCreateRequestDto productCreateRequestDto) {
+            @Valid @RequestBody ProductCreateRequestDto productCreateRequestDto) {
         // principal.getName()으로 UserDetailsService가 반환한 사용자의 name(username)을 가져옵니다.
         String username = principal.getName();
         // UserService에서 사용자 ID를 조회합니다.
@@ -80,18 +88,19 @@ public class ProductController {
         return ResponseEntity.ok(createdProduct);
     }
 
-
+    @Operation(summary = "단일 상품 리뷰 상태 변경", description = "id가 {id}인 상품의 리뷰 상태 변경 요청 API")
     // 6. 상품 내부 리뷰 API (상태 변경)
     @PostMapping("/{id}/review")
     public ResponseEntity<ProductDetailResponseDto> reviewProduct(
-            @PathVariable Integer id,
-            @RequestBody ReviewRequestDto reviewRequestDto) {
+            @NotNull @PathVariable Integer id,
+            @Valid @RequestBody ReviewRequestDto reviewRequestDto) {
 
         ProductDetailResponseDto updatedProduct = productService.reviewProductStatus(id, reviewRequestDto.getStatus());
         return ResponseEntity.ok(updatedProduct);
     }
 
 
+    @Operation(summary = "상품 삭제", description = "id가 {id}인 상품을 삭제하는 APi")
     // 상품 삭제 API
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
