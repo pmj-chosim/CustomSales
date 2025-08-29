@@ -56,13 +56,17 @@ public class ProductController {
     @GetMapping("/my")
     public ResponseEntity<List<ProductSimpleResponseDto>> getMyProducts(Principal principal) {
         // Principal 객체를 통해 현재 인증된 사용자의 이름을 가져옵니다.
-        String username = principal.getName();
+        if (principal == null) {
+            // 인증되지 않은 유저 요청
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         // UserService를 사용해 사용자 이름을 기반으로 ID를 조회합니다.
         /* 서비스에 유저가 있는지 검증 uR.~~로
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }*/
-        UserResponseDto user = userService.getUserIdByName(username);
+        UserResponseDto user = userService.getUserIdByName(principal.getName());
         List<ProductSimpleResponseDto> myProducts = productService.findProductsByUserId(user.getId());
         return ResponseEntity.ok(myProducts);
     }

@@ -46,7 +46,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductSimpleResponseDto> findAllApprovedProducts(Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        // findApprovedProducts는 ProductRepository에 직접 쿼리를 정의해야 합니다.
+        // findApprovedProducts는 ProductRepository에 직접 쿼리 정의
         Page<Product> approvedProductsPage = pR.findApprovedProducts(ReviewStatus.APPROVED, pageable);
 
         return approvedProductsPage.map(ProductSimpleResponseDto::from);
@@ -57,8 +57,7 @@ public class ProductService {
     public List<ProductSimpleResponseDto> findProductsByUserId(Integer userId) {
         List<Product> products = pR.findByUserId(userId);
 
-        User user= uR.findById(userId).orElseThrow(()->new RuntimeException(""));
-        //여기에 ExceptionHandler에서 위에 있는 runtimeexcetpion 받아서 처리 402
+        User user= uR.findById(userId).orElseThrow(()->new RuntimeException("유저"+userId+"가 존재하지 않습니다"));
 
         return products.stream()
                 .map(product -> {

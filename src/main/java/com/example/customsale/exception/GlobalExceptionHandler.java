@@ -15,7 +15,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // @Valid 검증 실패 시 발생하는 예외 처리
+    // 400, @Valid 검증 실패 시 발생하는 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -27,6 +27,15 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse("유효성 검사 실패", HttpStatus.BAD_REQUEST.value(), errors);
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
+
+    // 500 Internal Server Error: 그 외 모든 예외
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse("내부 서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value(), null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
 
     // 서비스 로직에서 발생하는 IllegalArgumentException(예: 중복 아이디) 처리
     @ExceptionHandler(IllegalArgumentException.class)
